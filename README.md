@@ -1,7 +1,6 @@
 Spendlens Expense Dashboard
 
 What this project does?
-
 This is a simple dashboard to help the Spendlens finance team track expenses. Instead of someone manually checking exchange rates on Google, this app takes expenses in different currencies and automatically turns them into US Dollars. It shows the total money spent and which categories are costing the most. It also features a searchable table and an export to CSV function to help the finance team with reporting.
 
 How to run it on your computer?
