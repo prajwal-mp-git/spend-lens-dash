@@ -16,8 +16,11 @@ Live Website: [https://spend-lens-dash.lovable.app]
 What the files do?
 
 /src/components: This folder has the visual parts of the app, like the tables, buttons, and the form.
+
 /src/lib: This is where I put the fixed list of exchange rates and the 20 sample expenses.
+
 /src/App.jsx: This is the main file that holds everything together and does the math.
+
 /docs: This folder has my notes about the project.
 
 Things to fix with 4 more hours?
