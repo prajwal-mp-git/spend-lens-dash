@@ -4,7 +4,9 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  Download,
   Plus,
+  Search,
   Sparkles,
   TrendingUp,
   Wallet,
@@ -93,6 +95,7 @@ function Spendlens() {
     key: "date",
     dir: "desc",
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
   // form
   const [fMerchant, setFMerchant] = useState("");
@@ -161,10 +164,14 @@ function Spendlens() {
     total: Math.round(r.total * 100) / 100,
   }));
 
-  const filtered = useMemo(
-    () => (activeCategory === "All" ? enriched : enriched.filter((e) => e.category === activeCategory)),
-    [enriched, activeCategory],
-  );
+  const filtered = useMemo(() => {
+    let data = activeCategory === "All" ? enriched : enriched.filter((e) => e.category === activeCategory);
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      data = data.filter((e) => e.merchant.toLowerCase().includes(q));
+    }
+    return data;
+  }, [enriched, activeCategory, searchQuery]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -180,6 +187,29 @@ function Spendlens() {
 
   const toggleSort = (key: "date" | "usd") =>
     setSortBy((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "desc" }));
+
+  const exportCSV = () => {
+    const headers = ["ID", "Date", "Merchant", "Category", "Original Amount", "Currency", "USD Equivalent"];
+    const rows = sorted.map((e) => [
+      e.id,
+      e.date,
+      `"${e.merchant.replace(/"/g, '""')}"`,
+      e.category,
+      e.amount,
+      e.currency,
+      e.usd.toFixed(2),
+    ]);
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `spendlens_expenses_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const amountNum = Number(fAmount);
   const formValid =
@@ -377,7 +407,17 @@ function Spendlens() {
         <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-base font-semibold">Transactions</h2>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search merchant…"
+                  className="input h-8 w-40 rounded-full pl-8 text-xs sm:w-52"
+                />
+              </div>
               {(["All", ...CATEGORIES] as const).map((c) => {
                 const active = activeCategory === c;
                 return (
@@ -395,6 +435,13 @@ function Spendlens() {
                   </button>
                 );
               })}
+              <button
+                onClick={exportCSV}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-secondary"
+                title="Export filtered list to CSV"
+              >
+                <Download className="size-3.5" /> Export CSV
+              </button>
             </div>
           </div>
 
@@ -437,7 +484,7 @@ function Spendlens() {
                 {sorted.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                      No transactions in this category.
+                      No transactions match your filters.
                     </td>
                   </tr>
                 )}
