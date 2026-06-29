@@ -101,10 +101,10 @@ function Spendlens() {
   const [fCategory, setFCategory] = useState("Travel");
   const [fDate, setFDate] = useState("");
 
-  const rates = useMemo(() => ({ ...initialRates, EUR: eurRate }), [eurRate]);
-  const baseRates = initialRates;
+  const rates: Record<string, number> = useMemo(() => ({ ...initialRates, EUR: eurRate }), [eurRate]);
+  const baseRates: Record<string, number> = initialRates;
 
-  const toUSD = (amount: number, currency: string, r = rates) =>
+  const toUSD = (amount: number, currency: string, r: Record<string, number> = rates) =>
     Math.round((amount / r[currency]) * 100) / 100;
 
   const enriched = useMemo(
